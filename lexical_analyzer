@@ -1,0 +1,57 @@
+import os
+
+class SyntaxError(Exception):
+    pass
+
+def lexical_analyzer(text):
+    identifiers = []
+    keywords = []
+    literals = []
+    operators = []
+    others = []
+
+    token = ""
+
+    for char in text:
+        if char.isalnum() or char == '_':
+            token += char
+        elif token:
+            if token in ("int", "char", "float", "if", "else", "while", "for"):
+                keywords.append(token)
+            else:
+                identifiers.append(token)
+            token = ""
+
+        if char in (';', ',', '(', ')', '{', '}'):
+            others.append(char)
+        elif char in ('+', '-', '*', '/', '=', '<', '>', '&', '|', '^', '%'):
+            operators.append(char)
+        elif char == '"' or char == "'":
+            quote_char = char
+            literal = char
+            char = next(text, None)
+            while char is not None and char != quote_char:
+                literal += char
+                char = next(text, None)
+            if char is None:
+                raise SyntaxError("Unterminated string literal")
+            else:
+                literal += quote_char
+                literals.append(literal)
+
+    return identifiers, keywords, literals, operators, others
+
+try:
+    filepath = input("Enter File Path: ")
+    with open(filepath) as f:
+        text = iter(f.read())
+    identifiers, keywords, literals, operators, others = lexical_analyzer(text)
+    print("Identifiers:", identifiers)
+    print("Keywords:", keywords)
+    print("Literals:", literals)
+    print("Operators:", operators)
+    print("Others:", others)
+except FileNotFoundError:
+    print("File not found.")
+except SyntaxError as e:
+    print("Syntax Error:", e)
